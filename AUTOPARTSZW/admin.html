@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - AutoPartsZW</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #f7fafc;
+      color: #111827;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    .page-width { width: min(1180px, calc(100% - 36px)); margin: 0 auto; }
+
+    .navbar {
+      background: #ffffff;
+      color: #111827;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid #e6e9ee;
+    }
+
+    .navbar .logo { font-size: 1.35rem; font-weight: 700; }
+    .navbar .logo span { color: #1f6feb; }
+    .nav-links { display: flex; align-items: center; gap: 18px; }
+    .nav-links a { color: #374151; font-size: 0.95rem; transition: color 0.2s; }
+    .nav-links a:hover { color: #111827; }
+
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .btn-logout {
+      background: #e53935;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-logout:hover { background: #b71c1c; }
+
+    /* ── ADMIN NAVBAR ── */
+    .admin-navbar {
+      display: none;
+    }
+
+    /* ── LAYOUT ── */
+    .admin-layout { display: flex; min-height: calc(100vh - 54px); }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 200px;
+      background: #2a2a2a;
+      flex-shrink: 0;
+      padding: 20px 0;
+    }
+
+    .sidebar-item {
+      padding: 12px 24px;
+      font-size: 14px;
+      color: #aaa;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-item:hover  { background: #333; color: #fff; }
+    .sidebar-item.active { background: #e53935; color: #fff; }
+
+    /* ── MAIN CONTENT ── */
+    .admin-main { flex: 1; padding: 28px; overflow-x: auto; }
+
+    /* ── SECTION PANELS ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── STATS CARDS ── */
+    .stats-grid {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px 24px;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .stat-card .stat-label { font-size: 12px; color: #777; margin-bottom: 6px; }
+    .stat-card .stat-value { font-size: 28px; font-weight: bold; color: #1a1a1a; }
+    .stat-card .stat-icon  { font-size: 22px; float: right; margin-top: -30px; }
+    .stat-card .stat-sub   { font-size: 12px; color: #2e7d32; margin-top: 4px; }
+
+    /* ── SECTION TITLE ── */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .section-header h2 { font-size: 18px; color: #1a1a1a; }
+
+    .btn-add {
+      background: #e53935;
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 5px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-add:hover { background: #b71c1c; }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead { background: #1a1a1a; color: #fff; }
+    thead th { padding: 12px 14px; text-align: left; font-weight: bold; }
+
+    tbody tr { border-bottom: 1px solid #eee; transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+    tbody td { padding: 11px 14px; vertical-align: middle; }
+
+    .badge-stock {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .badge-stock.in  { background: #e8f5e9; color: #2e7d32; }
+    .badge-stock.low { background: #fff8e1; color: #f57f17; }
+    .badge-stock.out { background: #fdecea; color: #b71c1c; }
+
+    .badge-order {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .badge-order.pending   { background: #fff8e1; color: #f57f17; }
+    .badge-order.confirmed { background: #e3f2fd; color: #1565c0; }
+    .badge-order.delivered { background: #e8f5e9; color: #2e7d32; }
+    .badge-order.cancelled { background: #fdecea; color: #b71c1c; }
+
+    .action-btns { display: flex; gap: 6px; }
+
+    .btn-edit, .btn-delete, .btn-view {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-edit   { background: #1565c0; color: #fff; }
+    .btn-delete { background: #e53935; color: #fff; }
+    .btn-view   { background: #555;    color: #fff; }
+    .btn-edit:hover, .btn-delete:hover, .btn-view:hover { opacity: 0.85; }
+
+    /* ── SEARCH / FILTER ROW ── */
+    .table-toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .table-toolbar input,
+    .table-toolbar select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 13px;
+      background: #fff;
+    }
+
+    .table-toolbar input:focus,
+    .table-toolbar select:focus { outline: none; border-color: #e53935; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      width: 500px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 { font-size: 18px; margin-bottom: 20px; color: #1a1a1a; }
+
+    .form-group { margin-bottom: 14px; }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 13px;
+      background: #fff;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { outline: none; border-color: #e53935; }
+
+    .form-row-2 { display: flex; gap: 12px; }
+    .form-row-2 .form-group { flex: 1; }
+
+    .modal-btns { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+    .btn-save {
+      padding: 9px 22px;
+      background: #e53935;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-save:hover { background: #b71c1c; }
+
+    .btn-cancel {
+      padding: 9px 18px;
+      background: #f5f5f5;
+      color: #555;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-cancel:hover { background: #eee; }
+
+    /* ── CONFIRM DELETE ── */
+    .confirm-modal { text-align: center; }
+    .confirm-modal .warn-icon { font-size: 46px; margin-bottom: 12px; }
+    .confirm-modal h2 { margin-bottom: 10px; }
+    .confirm-modal p  { font-size: 13px; color: #777; margin-bottom: 20px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background-color: #1a1a1a;
+      color: #aaa;
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+    }
+
+    footer span { color: #e53935; }
+
+    @media (max-width: 650px) {
+      .sidebar { display: none; }
+      .stats-grid { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-width">
+    <header>
+      <nav class="navbar">
+        <div class="logo">Auto<span>Parts</span>ZW</div>
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="catalog.php">Catalog</a>
+          <a href="cart.html">Cart</a>
+          <a href="login.html">Login</a>
+        </div>
+        <div class="nav-right">
+          <span>👤 Admin</span>
+          <button class="btn-logout" onclick="window.location.href='login.html'">Logout</button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- LAYOUT -->
+    <div class="admin-layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-item active" onclick="showPanel(this,'dashboard')">📊 Dashboard</div>
+      <div class="sidebar-item" onclick="showPanel(this,'parts')">🔧 Manage Parts</div>
+      <div class="sidebar-item" onclick="showPanel(this,'orders')">📦 Orders</div>
+      <div class="sidebar-item" onclick="showPanel(this,'stock')">📋 Stock Levels</div>
+
+    <!-- MAIN -->
+    <div class="admin-main">
+
+      <!-- ── DASHBOARD PANEL ── -->
+      <div class="panel active" id="panel-dashboard">
+        <h2 style="margin-bottom:20px; font-size:20px;">Welcome back, Admin 👋</h2>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Parts</div>
+            <div class="stat-value" id="statParts">12</div>
+            <div class="stat-icon">🔧</div>
+            <div class="stat-sub">In catalog</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value">8</div>
+            <div class="stat-icon">📦</div>
+            <div class="stat-sub">↑ 3 new today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Revenue</div>
+            <div class="stat-value">$647</div>
+            <div class="stat-icon">💰</div>
+            <div class="stat-sub">This month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Low Stock</div>
+            <div class="stat-value" id="statLowStock">2</div>
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-sub" style="color:#f57f17;">Needs restocking</div>
+          </div>
+        </div>
+
+        <!-- Recent Orders Preview -->
+        <div class="section-header">
+          <h2>Recent Orders</h2>
+          <button class="btn-add" onclick="showPanel(this,'orders')">View All</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>APZ-4821</td>
+                <td>Nyasha Moyo</td>
+                <td>$97.50</td>
+                <td>EcoCash</td>
+                <td><span class="badge-order pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td>APZ-4820</td>
+                <td>Tendai Dube</td>
+                <td>$42.00</td>
+                <td>OneMoney</td>
+                <td><span class="badge-order confirmed">Confirmed</span></td>
+              </tr>
+              <tr>
+                <td>APZ-4819</td>
+                <td>Farai Chikomo</td>
+                <td>$120.00</td>
+                <td>Cash</td>
+                <td><span class="badge-order delivered">Delivered</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PARTS PANEL ── -->
+      <div class="panel" id="panel-parts">
+        <div class="section-header">
+          <h2>Manage Parts</h2>
+          <button class="btn-add" onclick="openAddModal()">+ Add New Part</button>
+        </div>
+
+        <div class="table-toolbar">
+          <input type="text" id="partsSearch" placeholder="Search parts..." oninput="filterPartsTable()" />
+          <select id="partsCatFilter" onchange="filterPartsTable()">
+            <option value="">All Categories</option>
+            <option>Brakes</option>
+            <option>Engine</option>
+            <option>Suspension</option>
+            <option>Electrical</option>
+            <option>Filters</option>
+            <option>Body Parts</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Part Name</th>
+                <th>Category</th>
+                <th>Fits</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="partsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── ORDERS PANEL ── -->
+      <div class="panel" id="panel-orders">
+        <div class="section-header">
+          <h2>Customer Orders</h2>
+        </div>
+
+        <div class="table-toolbar">
+          <input type="text" placeholder="Search orders..." />
+          <select id="orderStatusFilter" onchange="filterOrders()">
+            <option value="">All Statuses</option>
+            <option>Pending</option>
+            <option>Confirmed</option>
+            <option>Delivered</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── STOCK PANEL ── -->
+      <div class="panel" id="panel-stock">
+        <div class="section-header">
+          <h2>Stock Levels</h2>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Part Name</th>
+                <th>Category</th>
+                <th>Stock Qty</th>
+                <th>Status</th>
+                <th>Update Stock</th>
+              </tr>
+            </thead>
+            <tbody id="stockTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ADD / EDIT PART MODAL ── -->
+  <div class="modal-overlay" id="partModal">
+    <div class="modal">
+      <h2 id="modalTitle">Add New Part</h2>
+
+      <div class="form-group">
+        <label>Part Name</label>
+        <input type="text" id="partName" placeholder="e.g. Front Brake Pads" />
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>Category</label>
+          <select id="partCategory">
+            <option>Brakes</option>
+            <option>Engine</option>
+            <option>Suspension</option>
+            <option>Electrical</option>
+            <option>Filters</option>
+            <option>Body Parts</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Price ($)</label>
+          <input type="number" id="partPrice" placeholder="0.00" step="0.01" min="0" />
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>Car Make</label>
+          <select id="partMake">
+            <option>Toyota</option>
+            <option>Honda</option>
+            <option>Mazda</option>
+            <option>Nissan</option>
+            <option>Isuzu</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Model</label>
+          <input type="text" id="partModel" placeholder="e.g. Hilux" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Year Range (e.g. 2015–2022)</label>
+        <input type="text" id="partYears" placeholder="e.g. 2015–2022" />
+      </div>
+      <div class="form-group">
+        <label>Stock Quantity</label>
+        <input type="number" id="partStock" placeholder="e.g. 10" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Icon (emoji)</label>
+        <input type="text" id="partIcon" placeholder="e.g. 🛑" maxlength="4" />
+      </div>
+
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal('partModal')">Cancel</button>
+        <button class="btn-save" onclick="savePart()">Save Part</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DELETE CONFIRM MODAL ── -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal confirm-modal">
+      <div class="warn-icon">🗑️</div>
+      <h2>Delete Part?</h2>
+      <p>Are you sure you want to delete this part? This action cannot be undone.</p>
+      <div class="modal-btns" style="justify-content:center;">
+        <button class="btn-cancel" onclick="closeModal('deleteModal')">Cancel</button>
+        <button class="btn-save" onclick="confirmDelete()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ORDER STATUS MODAL ── -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal">
+      <h2>Update Order Status</h2>
+      <div class="form-group">
+        <label>Order Number</label>
+        <input type="text" id="viewOrderNum" readonly style="background:#f5f5f5;" />
+      </div>
+      <div class="form-group">
+        <label>Customer</label>
+        <input type="text" id="viewOrderCustomer" readonly style="background:#f5f5f5;" />
+      </div>
+      <div class="form-group">
+        <label>New Status</label>
+        <select id="newOrderStatus">
+          <option>Pending</option>
+          <option>Confirmed</option>
+          <option>Delivered</option>
+          <option>Cancelled</option>
+        </select>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal('orderModal')">Cancel</button>
+        <button class="btn-save" onclick="updateOrderStatus()">Update Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 <span>AutoPartsZW</span> &nbsp;|&nbsp; Nyasha Ernest Nyakamhanda &nbsp;|&nbsp; B242508B &nbsp;|&nbsp; NWE214</p>
+  </footer>
+</div>
+
+  <script>
+
+    // ── DATA ──
+    let parts = [
+      { id:1,  name:'Front Brake Pads',   icon:'🛑', category:'Brakes',     make:'Toyota', model:'Hilux',   years:'2015–2022', price:18.50, stock:15 },
+      { id:2,  name:'Rear Brake Pads',    icon:'🛑', category:'Brakes',     make:'Toyota', model:'Hilux',   years:'2015–2022', price:16.00, stock:10 },
+      { id:3,  name:'Alternator 90A',     icon:'⚡', category:'Electrical', make:'Toyota', model:'Corolla', years:'2010–2018', price:65.00, stock:4  },
+      { id:4,  name:'Shock Absorbers',    icon:'🔩', category:'Suspension', make:'Mazda',  model:'B2500',   years:'2005–2012', price:42.00, stock:7  },
+      { id:5,  name:'Oil Filter',         icon:'🔧', category:'Filters',    make:'Honda',  model:'Fit',     years:'2008–2020', price:4.50,  stock:30 },
+      { id:6,  name:'Timing Belt Kit',    icon:'⚙️', category:'Engine',     make:'Honda',  model:'Fit',     years:'2008–2014', price:55.00, stock:2  },
+      { id:7,  name:'Front Bumper',       icon:'🚗', category:'Body Parts', make:'Toyota', model:'Hilux',   years:'2016–2022', price:120.00,stock:3  },
+      { id:8,  name:'Air Filter',         icon:'🔧', category:'Filters',    make:'Nissan', model:'Navara',  years:'2010–2020', price:8.00,  stock:20 },
+      { id:9,  name:'Spark Plugs (x4)',   icon:'⚡', category:'Engine',     make:'Honda',  model:'Fit',     years:'2008–2020', price:22.00, stock:1  },
+      { id:10, name:'Radiator',           icon:'⚙️', category:'Engine',     make:'Toyota', model:'Corolla', years:'2010–2018', price:95.00, stock:5  },
+      { id:11, name:'Brake Disc Rotor',   icon:'🛑', category:'Brakes',     make:'Mazda',  model:'B2500',   years:'2005–2012', price:35.00, stock:8  },
+      { id:12, name:'Side Mirror (Left)', icon:'🚗', category:'Body Parts', make:'Nissan', model:'Navara',  years:'2010–2020', price:28.00, stock:6  },
+    ];
+
+    let orders = [
+      { id:'APZ-4821', customer:'Nyasha Moyo',   phone:'0771234567', items:'Front Brake Pads x1, Oil Filter x2', total:27.50, payment:'EcoCash',  status:'Pending'   },
+      { id:'APZ-4820', customer:'Tendai Dube',   phone:'0712345678', items:'Shock Absorbers x1',                 total:42.00, payment:'OneMoney', status:'Confirmed' },
+      { id:'APZ-4819', customer:'Farai Chikomo', phone:'0771122334', items:'Front Bumper x1',                    total:120.00,payment:'Cash',      status:'Delivered' },
+      { id:'APZ-4818', customer:'Rudo Mwangi',   phone:'0773344556', items:'Alternator 90A x1',                  total:65.00, payment:'EcoCash',  status:'Delivered' },
+      { id:'APZ-4817', customer:'Tinashe Banda', phone:'0714455667', items:'Oil Filter x3',                      total:13.50, payment:'OneMoney', status:'Cancelled' },
+      { id:'APZ-4816', customer:'Simba Choto',   phone:'0772233445', items:'Timing Belt Kit x1, Air Filter x1',  total:63.00, payment:'EcoCash',  status:'Confirmed' },
+      { id:'APZ-4815', customer:'Chipo Makoni',  phone:'0715566778', items:'Spark Plugs x2',                     total:44.00, payment:'Cash',      status:'Pending'   },
+      { id:'APZ-4814', customer:'Tatenda Nyoni', phone:'0776677889', items:'Brake Disc Rotor x1',                total:35.00, payment:'EcoCash',  status:'Delivered' },
+    ];
+
+    let editingId    = null;
+    let deletingId   = null;
+    let editingOrder = null;
+
+    // ── PANEL SWITCH ──
+    function showPanel(item, name) {
+      document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
+      document.querySelectorAll('.sidebar-item').forEach(function (s) { s.classList.remove('active'); });
+      document.getElementById('panel-' + name).classList.add('active');
+      item.classList.add('active');
+
+      if (name === 'parts') renderPartsTable(parts);
+      if (name === 'orders') renderOrdersTable(orders);
+      if (name === 'stock') renderStockTable();
+    }
+
+    // ── STOCK BADGE ──
+    function stockBadge(qty) {
+      if (qty === 0)  return '<span class="badge-stock out">Out of Stock</span>';
+      if (qty <= 3)   return '<span class="badge-stock low">Low (' + qty + ')</span>';
+      return '<span class="badge-stock in">In Stock (' + qty + ')</span>';
+    }
+
+    // ── ORDER BADGE ──
+    function orderBadge(status) {
+      const cls = { Pending:'pending', Confirmed:'confirmed', Delivered:'delivered', Cancelled:'cancelled' };
+      return '<span class="badge-order ' + (cls[status] || '') + '">' + status + '</span>';
+    }
+
+    // ── RENDER PARTS TABLE ──
+    function renderPartsTable(data) {
+      document.getElementById('partsTableBody').innerHTML = data.map(function (p, i) {
+        return '<tr id="row-' + p.id + '">' +
+          '<td>' + (i + 1) + '</td>' +
+          '<td>' + p.icon + ' ' + p.name + '</td>' +
+          '<td>' + p.category + '</td>' +
+          '<td>' + p.make + ' ' + p.model + ' ' + p.years + '</td>' +
+          '<td>$' + p.price.toFixed(2) + '</td>' +
+          '<td>' + stockBadge(p.stock) + '</td>' +
+          '<td><div class="action-btns">' +
+            '<button class="btn-edit" onclick="openEditModal(' + p.id + ')">Edit</button>' +
+            '<button class="btn-delete" onclick="openDeleteModal(' + p.id + ')">Delete</button>' +
+          '</div></td>' +
+        '</tr>';
+      }).join('');
+      document.getElementById('statParts').textContent = parts.length;
+      updateLowStockCount();
+    }
+
+    // ── RENDER ORDERS TABLE ──
+    function renderOrdersTable(data) {
+      document.getElementById('ordersTableBody').innerHTML = data.map(function (o) {
+        return '<tr>' +
+          '<td><strong>' + o.id + '</strong></td>' +
+          '<td>' + o.customer + '</td>' +
+          '<td>' + o.phone + '</td>' +
+          '<td style="max-width:180px;font-size:12px;">' + o.items + '</td>' +
+          '<td><strong>$' + o.total.toFixed(2) + '</strong></td>' +
+          '<td>' + o.payment + '</td>' +
+          '<td>' + orderBadge(o.status) + '</td>' +
+          '<td><button class="btn-view" onclick="openOrderModal(\'' + o.id + '\')">Update</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    // ── RENDER STOCK TABLE ──
+    function renderStockTable() {
+      document.getElementById('stockTableBody').innerHTML = parts.map(function (p) {
+        return '<tr>' +
+          '<td>' + p.icon + ' ' + p.name + '</td>' +
+          '<td>' + p.category + '</td>' +
+          '<td><strong>' + p.stock + '</strong></td>' +
+          '<td>' + stockBadge(p.stock) + '</td>' +
+          '<td>' +
+            '<div style="display:flex;gap:6px;align-items:center;">' +
+              '<input type="number" min="0" value="' + p.stock + '" id="stock-' + p.id + '" style="width:70px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px;" />' +
+              '<button class="btn-edit" onclick="updateStock(' + p.id + ')">Update</button>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    // ── UPDATE STOCK ──
+    function updateStock(id) {
+      const part = parts.find(function (p) { return p.id === id; });
+      if (!part) return;
+      const newQty = parseInt(document.getElementById('stock-' + id).value);
+      if (isNaN(newQty) || newQty < 0) { alert('Please enter a valid stock quantity.'); return; }
+      part.stock = newQty;
+      renderStockTable();
+      updateLowStockCount();
+      alert('✅ Stock updated for ' + part.name);
+    }
+
+    function updateLowStockCount() {
+      const low = parts.filter(function (p) { return p.stock <= 3; }).length;
+      document.getElementById('statLowStock').textContent = low;
+    }
+
+    // ── FILTER PARTS TABLE ──
+    function filterPartsTable() {
+      const search = document.getElementById('partsSearch').value.toLowerCase();
+      const cat    = document.getElementById('partsCatFilter').value;
+      const filtered = parts.filter(function (p) {
+        const matchSearch = p.name.toLowerCase().includes(search) || p.make.toLowerCase().includes(search) || p.model.toLowerCase().includes(search);
+        const matchCat    = !cat || p.category === cat;
+        return matchSearch && matchCat;
+      });
+      renderPartsTable(filtered);
+    }
+
+    // ── FILTER ORDERS ──
+    function filterOrders() {
+      const status = document.getElementById('orderStatusFilter').value;
+      const filtered = status ? orders.filter(function (o) { return o.status === status; }) : orders;
+      renderOrdersTable(filtered);
+    }
+
+    // ── ADD MODAL ──
+    function openAddModal() {
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Add New Part';
+      ['partName','partPrice','partModel','partYears','partStock','partIcon'].forEach(function (id) {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('partModal').classList.add('show');
+    }
+
+    // ── EDIT MODAL ──
+    function openEditModal(id) {
+      const part = parts.find(function (p) { return p.id === id; });
+      if (!part) return;
+      editingId = id;
+      document.getElementById('modalTitle').textContent = 'Edit Part';
+      document.getElementById('partName').value     = part.name;
+      document.getElementById('partCategory').value = part.category;
+      document.getElementById('partPrice').value    = part.price;
+      document.getElementById('partMake').value     = part.make;
+      document.getElementById('partModel').value    = part.model;
+      document.getElementById('partYears').value    = part.years;
+      document.getElementById('partStock').value    = part.stock;
+      document.getElementById('partIcon').value     = part.icon;
+      document.getElementById('partModal').classList.add('show');
+    }
+
+    // ── SAVE PART ──
+    function savePart() {
+      const name     = document.getElementById('partName').value.trim();
+      const category = document.getElementById('partCategory').value;
+      const price    = parseFloat(document.getElementById('partPrice').value);
+      const make     = document.getElementById('partMake').value;
+      const model    = document.getElementById('partModel').value.trim();
+      const years    = document.getElementById('partYears').value.trim();
+      const stock    = parseInt(document.getElementById('partStock').value);
+      const icon     = document.getElementById('partIcon').value.trim() || '🔧';
+
+      if (!name)           { alert('Please enter a part name.'); return; }
+      if (isNaN(price))    { alert('Please enter a valid price.'); return; }
+      if (!model)          { alert('Please enter a model.'); return; }
+      if (!years)          { alert('Please enter a year range.'); return; }
+      if (isNaN(stock))    { alert('Please enter a stock quantity.'); return; }
+
+      if (editingId) {
+        const part = parts.find(function (p) { return p.id === editingId; });
+        Object.assign(part, { name, category, price, make, model, years, stock, icon });
+      } else {
+        const newId = parts.length > 0 ? Math.max.apply(null, parts.map(function (p) { return p.id; })) + 1 : 1;
+        parts.push({ id: newId, name, category, price, make, model, years, stock, icon });
+      }
+
+      closeModal('partModal');
+      renderPartsTable(parts);
+    }
+
+    // ── DELETE MODAL ──
+    function openDeleteModal(id) {
+      deletingId = id;
+      document.getElementById('deleteModal').classList.add('show');
+    }
+
+    function confirmDelete() {
+      parts = parts.filter(function (p) { return p.id !== deletingId; });
+      closeModal('deleteModal');
+      renderPartsTable(parts);
+    }
+
+    // ── ORDER MODAL ──
+    function openOrderModal(id) {
+      const order = orders.find(function (o) { return o.id === id; });
+      if (!order) return;
+      editingOrder = id;
+      document.getElementById('viewOrderNum').value      = order.id;
+      document.getElementById('viewOrderCustomer').value = order.customer;
+      document.getElementById('newOrderStatus').value    = order.status;
+      document.getElementById('orderModal').classList.add('show');
+    }
+
+    function updateOrderStatus() {
+      const order = orders.find(function (o) { return o.id === editingOrder; });
+      if (!order) return;
+      order.status = document.getElementById('newOrderStatus').value;
+      closeModal('orderModal');
+      renderOrdersTable(orders);
+    }
+
+    // ── CLOSE MODAL ──
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    // Close modal on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) overlay.classList.remove('show');
+      });
+    });
+
+    // ── INIT ──
+    renderPartsTable(parts);
+
+  </script>
+
+</body>
+</html>

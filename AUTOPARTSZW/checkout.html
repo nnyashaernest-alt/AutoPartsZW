@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout - AutoPartsZW</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7fafc;
+      color: #111827;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      background-color: #ffffff;
+      padding: 14px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid #e6e9ee;
+    }
+
+    .navbar .logo { font-size: 20px; font-weight: bold; color: #111827; }
+    .navbar .logo span { color: #1f6feb; }
+    .navbar ul { list-style: none; display: flex; gap: 20px; }
+    .navbar ul li a { color: #374151; font-size: 14px; transition: color 0.2s; }
+    .navbar ul li a:hover { color: #111827; }
+    .nav-right { display: flex; align-items: center; }
+
+    .cart-btn {
+      background-color: #1f6feb;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cart-count {
+      background: #fff;
+      color: #1f6feb;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 1px 6px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background-color: #ffffff;
+      color: #111827;
+      padding: 24px 30px;
+      text-align: center;
+      border-bottom: 1px solid #e6e9ee;
+    }
+
+    .page-header h1 { font-size: 24px; }
+    .page-header h1 span { color: #1f6feb; }
+
+    /* ── STEPS BAR ── */
+    .steps-bar {
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      padding: 14px 30px;
+      display: flex;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .step.active { color: #1f6feb; font-weight: bold; }
+    .step.done   { color: #2e7d32; }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .step.active .step-num { border-color: #1f6feb; color: #1f6feb; }
+    .step.done   .step-num { border-color: #2e7d32; color: #2e7d32; background: #e8f5e9; }
+
+    .step-divider {
+      width: 40px;
+      height: 2px;
+      background: #ddd;
+      margin: 0 8px;
+      align-self: center;
+    }
+
+    /* ── CHECKOUT LAYOUT ── */
+    .checkout-layout {
+      display: flex;
+      gap: 24px;
+      max-width: 1000px;
+      margin: 35px auto;
+      padding: 0 20px;
+      align-items: flex-start;
+    }
+
+    /* ── FORMS SIDE ── */
+    .checkout-forms { flex: 1; }
+
+    .form-section {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .form-section h2 {
+      font-size: 16px;
+      font-weight: bold;
+      color: #1a1a1a;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .form-group { margin-bottom: 15px; }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 13px;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #1f6feb;
+    }
+
+    .form-group textarea { resize: vertical; height: 70px; }
+
+    .form-row-2 { display: flex; gap: 14px; }
+    .form-row-2 .form-group { flex: 1; }
+
+    /* ── PAYMENT METHOD ── */
+    .payment-options { display: flex; flex-direction: column; gap: 12px; }
+
+    .payment-option {
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .payment-option:hover { border-color: #1f6feb; background: #f0f7ff; }
+    .payment-option.selected { border-color: #1f6feb; background: #f0f7ff; }
+
+    .payment-option input[type="radio"] { accent-color: #1f6feb; flex-shrink: 0; }
+
+    .pay-icon { font-size: 26px; flex-shrink: 0; }
+
+    .pay-label { flex: 1; }
+    .pay-label strong { font-size: 14px; display: block; margin-bottom: 2px; }
+    .pay-label span   { font-size: 12px; color: #777; }
+
+    /* EcoCash phone field */
+    .ecocash-field {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .ecocash-field.show { display: block; }
+
+    /* ── ORDER SUMMARY SIDE ── */
+    .order-summary { width: 300px; flex-shrink: 0; }
+
+    .summary-box {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 22px;
+      position: sticky;
+      top: 80px;
+    }
+
+    .summary-box h2 { font-size: 16px; font-weight: bold; margin-bottom: 16px; color: #1a1a1a; }
+
+    .summary-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .summary-item .s-icon {
+      font-size: 22px;
+      background: #f0f0f0;
+      border-radius: 5px;
+      padding: 4px 7px;
+      flex-shrink: 0;
+    }
+
+    .summary-item .s-name { flex: 1; color: #333; }
+    .summary-item .s-qty  { color: #777; font-size: 12px; }
+    .summary-item .s-price { font-weight: bold; color: #1a1a1a; }
+
+    .summary-divider { border: none; border-top: 1px solid #eee; margin: 14px 0; }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 10px;
+      color: #555;
+    }
+
+    .summary-row.total {
+      font-size: 16px;
+      font-weight: bold;
+      color: #1a1a1a;
+      border-top: 1px solid #eee;
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+
+    .summary-row.total span:last-child { color: #e53935; }
+
+    .btn-place-order {
+      width: 100%;
+      padding: 12px;
+      background: #e53935;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.2s;
+    }
+
+    .btn-place-order:hover { background: #b71c1c; }
+
+    .secure-note {
+      text-align: center;
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 10px;
+    }
+
+    /* ── SUCCESS MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 10px;
+      padding: 40px 35px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .modal .success-icon { font-size: 56px; margin-bottom: 16px; }
+    .modal h2 { font-size: 22px; margin-bottom: 10px; color: #1a1a1a; }
+    .modal p  { font-size: 14px; color: #777; margin-bottom: 6px; }
+    .modal .order-num { font-size: 18px; font-weight: bold; color: #e53935; margin: 14px 0; }
+
+    .modal-btns { display: flex; gap: 10px; margin-top: 24px; }
+
+    .modal-btns a {
+      flex: 1;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .btn-orders  { background: #e53935; color: #fff; }
+    .btn-home    { border: 1px solid #ddd; color: #333; }
+    .btn-orders:hover { background: #b71c1c; }
+    .btn-home:hover   { background: #f5f5f5; }
+
+    /* ── FOOTER ── */
+    footer {
+      background-color: #1a1a1a;
+      color: #aaa;
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      margin-top: 40px;
+    }
+
+    footer span { color: #e53935; }
+
+    @media (max-width: 700px) {
+      .navbar ul { display: none; }
+      .checkout-layout { flex-direction: column; }
+      .order-summary { width: 100%; }
+      .form-row-2 { flex-direction: column; gap: 0; }
+      .steps-bar { gap: 0; }
+      .step-divider { width: 20px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">Auto<span>Parts</span>ZW</div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="catalog.php">Catalog</a></li>
+      <li><a href="login.html">Login</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="cart.php" class="cart-btn">
+        🛒 Cart <span class="cart-count">3</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>Secure <span>Checkout</span></h1>
+  </div>
+
+  <!-- STEPS BAR -->
+  <div class="steps-bar">
+    <div class="step done">
+      <div class="step-num">✓</div>
+      <span>Cart</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step active">
+      <div class="step-num">2</div>
+      <span>Checkout</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <span>Confirmation</span>
+    </div>
+  </div>
+
+  <!-- CHECKOUT LAYOUT -->
+  <div class="checkout-layout">
+
+    <!-- FORMS -->
+    <div class="checkout-forms">
+
+      <!-- DELIVERY DETAILS -->
+      <div class="form-section">
+        <h2>📦 Delivery Details</h2>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="firstName" placeholder="Nyasha" />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="lastName" placeholder="Nyakamhanda" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="e.g. 0771234567" />
+        </div>
+
+        <div class="form-group">
+          <label>City / Town</label>
+          <select id="city">
+            <option value="">Select city...</option>
+            <option>Harare</option>
+            <option>Bulawayo</option>
+            <option>Mutare</option>
+            <option>Gweru</option>
+            <option>Masvingo</option>
+            <option>Kwekwe</option>
+            <option>Kadoma</option>
+            <option>Chinhoyi</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Delivery Address</label>
+          <input type="text" id="address" placeholder="e.g. 12 Samora Machel Ave, Harare" />
+        </div>
+
+        <div class="form-group">
+          <label>Order Notes (optional)</label>
+          <textarea id="notes" placeholder="Any special instructions for your order..."></textarea>
+        </div>
+      </div>
+
+      <!-- PAYMENT METHOD -->
+      <div class="form-section">
+        <h2>💳 Payment Method</h2>
+
+        <div class="payment-options">
+
+          <!-- EcoCash -->
+          <label class="payment-option selected" id="opt-ecocash" onclick="selectPayment('ecocash')">
+            <input type="radio" name="payment" value="ecocash" checked />
+            <div class="pay-icon">📱</div>
+            <div class="pay-label">
+              <strong>EcoCash</strong>
+              <span>Pay via EcoCash mobile money (Sandbox demo)</span>
+            </div>
+          </label>
+
+          <div class="ecocash-field show" id="ecocash-field">
+            <div class="form-group" style="margin:0;">
+              <label>EcoCash Number</label>
+              <input type="tel" id="ecocashNum" placeholder="e.g. 0771234567" />
+            </div>
+          </div>
+
+          <!-- OneMoney -->
+          <label class="payment-option" id="opt-onemoney" onclick="selectPayment('onemoney')">
+            <input type="radio" name="payment" value="onemoney" />
+            <div class="pay-icon">💚</div>
+            <div class="pay-label">
+              <strong>OneMoney</strong>
+              <span>Pay via NetOne OneMoney (Sandbox demo)</span>
+            </div>
+          </label>
+
+          <div class="ecocash-field" id="onemoney-field">
+            <div class="form-group" style="margin:0;">
+              <label>OneMoney Number</label>
+              <input type="tel" id="onemoneyNum" placeholder="e.g. 0711234567" />
+            </div>
+          </div>
+
+          <!-- Cash on Delivery -->
+          <label class="payment-option" id="opt-cod" onclick="selectPayment('cod')">
+            <input type="radio" name="payment" value="cod" />
+            <div class="pay-icon">💵</div>
+            <div class="pay-label">
+              <strong>Cash on Delivery</strong>
+              <span>Pay in cash when your order arrives</span>
+            </div>
+          </label>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ORDER SUMMARY -->
+    <div class="order-summary">
+      <div class="summary-box">
+        <h2>Order Summary</h2>
+
+        <div class="summary-item">
+          <div class="s-icon">🛑</div>
+          <div class="s-name">Front Brake Pads</div>
+          <div class="s-qty">x1</div>
+          <div class="s-price">$18.50</div>
+        </div>
+        <div class="summary-item">
+          <div class="s-icon">🔧</div>
+          <div class="s-name">Oil Filter</div>
+          <div class="s-qty">x2</div>
+          <div class="s-price">$9.00</div>
+        </div>
+        <div class="summary-item">
+          <div class="s-icon">⚡</div>
+          <div class="s-name">Alternator 90A</div>
+          <div class="s-qty">x1</div>
+          <div class="s-price">$65.00</div>
+        </div>
+
+        <hr class="summary-divider" />
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>$92.50</span>
+        </div>
+        <div class="summary-row">
+          <span>Delivery</span>
+          <span>$5.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Discount</span>
+          <span>-$0.00</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>$97.50</span>
+        </div>
+
+        <button class="btn-place-order" onclick="placeOrder()">Place Order</button>
+        <p class="secure-note">🔒 Your payment details are secure</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUCCESS MODAL -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal">
+      <div class="success-icon">✅</div>
+      <h2>Order Placed!</h2>
+      <p>Thank you for your order. Your parts are being prepared.</p>
+      <div class="order-num" id="orderNum">Order #APZ-0001</div>
+      <p>A confirmation will be sent to your phone number.</p>
+      <div class="modal-btns">
+        <a href="orders.html" class="btn-orders">View Orders</a>
+        <a href="index.html" class="btn-home">Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 <span>AutoPartsZW</span> &nbsp;|&nbsp; Nyasha Ernest Nyakamhanda &nbsp;|&nbsp; B242508B &nbsp;|&nbsp; NWE214</p>
+  </footer>
+
+  <script>
+
+    // ── PAYMENT SELECTION ──
+    function selectPayment(method) {
+      ['ecocash', 'onemoney', 'cod'].forEach(function (m) {
+        document.getElementById('opt-' + m).classList.remove('selected');
+      });
+      document.getElementById('opt-' + method).classList.add('selected');
+
+      // Show/hide phone fields
+      document.getElementById('ecocash-field').classList.remove('show');
+      document.getElementById('onemoney-field').classList.remove('show');
+
+      if (method === 'ecocash')  document.getElementById('ecocash-field').classList.add('show');
+      if (method === 'onemoney') document.getElementById('onemoney-field').classList.add('show');
+    }
+
+    // ── PLACE ORDER ──
+    function placeOrder() {
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName  = document.getElementById('lastName').value.trim();
+      const phone     = document.getElementById('phone').value.trim();
+      const city      = document.getElementById('city').value;
+      const address   = document.getElementById('address').value.trim();
+      const method    = document.querySelector('input[name="payment"]:checked').value;
+
+      // Validation
+      if (!firstName || !lastName) { alert('Please enter your full name.'); return; }
+      if (!phone) { alert('Please enter your phone number.'); return; }
+      if (!city)  { alert('Please select your city.'); return; }
+      if (!address) { alert('Please enter your delivery address.'); return; }
+
+      if (method === 'ecocash') {
+        const num = document.getElementById('ecocashNum').value.trim();
+        if (!num) { alert('Please enter your EcoCash number.'); return; }
+      }
+
+      if (method === 'onemoney') {
+        const num = document.getElementById('onemoneyNum').value.trim();
+        if (!num) { alert('Please enter your OneMoney number.'); return; }
+      }
+
+      // Generate demo order number
+      const orderNum = 'APZ-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('orderNum').textContent = 'Order #' + orderNum;
+
+      // Show success modal
+      document.getElementById('successModal').classList.add('show');
+    }
+
+  </script>
+
+</body>
+</html>

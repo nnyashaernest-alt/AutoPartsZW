@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoPartsZW - Online Vehicle Parts Store</title>
+
+  <style>
+    /* Clean, flat styles (no gradients) */
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:Arial,Helvetica,sans-serif;background:#f7fafc;color:#111827;min-height:100vh}
+    img{display:block;max-width:100%}
+    a{text-decoration:none;color:inherit}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .page-width{width:min(1180px,calc(100% - 36px));margin:0 auto}
+
+    .topbar{background:#ffffff;color:#374151;text-align:center;padding:10px 0;font-size:0.85rem;border-bottom:1px solid #e6e9ee}
+    .navbar{background:#ffffff;color:#111827;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:14px 0;position:sticky;top:0;z-index:100;border-bottom:1px solid #e6e9ee}
+    .navbar .logo{font-size:1.35rem;font-weight:700}
+    .navbar .logo span{color:#1f6feb}
+    .navbar nav{display:flex;align-items:center;gap:20px}
+    .navbar nav a{font-size:0.95rem;color:#374151}
+    .navbar nav a:hover{color:#111827}
+
+    .cart-btn{background:#1f6feb;color:#fff;padding:10px 14px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:8px}
+    .cart-btn:hover{background:#1e40af}
+    .cart-count{background:#fff;color:#1f6feb;border-radius:999px;padding:3px 8px;font-size:0.75rem;font-weight:700;min-width:20px;text-align:center}
+
+    .hero{background:#ffffff;color:#111827;border-radius:8px;overflow:hidden;margin:20px auto;padding:28px;border:1px solid #e6e9ee}
+    .hero-inner{display:grid;grid-template-columns:minmax(280px,1fr) minmax(320px,420px);gap:28px;align-items:center}
+    .hero-copy h1{font-size:2.2rem;line-height:1.1;margin-bottom:16px;letter-spacing:-0.02em;color:#0f172a}
+    .hero-copy h1 span{color:#1f6feb}
+    .hero-copy p{max-width:560px;font-size:0.95rem;color:#374151;margin-bottom:20px;line-height:1.6}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:12px}
+
+    .btn-primary,.btn-secondary{border-radius:8px;padding:12px 20px;font-weight:700;border:none;cursor:pointer}
+    .btn-primary{background:#1f6feb;color:#fff}
+    .btn-primary:hover{background:#1e40af}
+    .btn-secondary{background:#f0f3f7;color:#111827;border:1px solid #d1d5db}
+    .btn-secondary:hover{background:#e5e9f0}
+
+    .hero-card{background:#ffffff;border:1px solid #e6e9ee;border-radius:8px;padding:20px;color:#111827}
+    .hero-card h3{margin-bottom:12px;font-size:1rem;color:#0f172a}
+    .hero-card p{color:#374151;margin-bottom:14px;line-height:1.6}
+
+    .search-bar{display:grid;grid-template-columns:1fr 1fr 1.4fr auto;gap:10px;align-items:center}
+    .search-bar select,.search-bar input{width:100%;border:1px solid #d1d5db;border-radius:8px;padding:10px;font-size:0.95rem;background:#fff;color:#111827;outline:none}
+    .search-bar option{color:#111827}
+    .search-bar input::placeholder{color:#9ca3af}
+    .search-bar button{border-radius:8px;border:none;background:#1f6feb;color:#fff;padding:10px 14px;font-weight:700}
+    .search-bar button:hover{background:#1e40af}
+
+    .section-title{text-align:center;font-size:1.8rem;margin:40px auto 20px;letter-spacing:-0.02em;color:#0f172a}
+    .section-title span{color:#1f6feb}
+
+    .categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:10px}
+    .category-card{background:#ffffff;border-radius:8px;padding:20px;text-align:center;border:1px solid #e6e9ee;color:#111827}
+    .category-card:hover{border-color:#1f6feb;box-shadow:0 4px 12px rgba(31,111,235,0.1)}
+    .category-card .icon{display:flex;justify-content:center;align-items:center;min-height:80px;margin-bottom:10px}
+    .category-card .icon img{max-width:70px;max-height:70px;object-fit:contain}
+    .category-card p{font-size:0.95rem;font-weight:700}
+
+    .parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;padding-bottom:30px}
+    .part-card{background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e6e9ee}
+    .part-card:hover{box-shadow:0 6px 16px rgba(0,0,0,0.08);border-color:#1f6feb}
+    .part-card .part-img{position:relative;min-height:140px;background:#f7fafc;display:grid;place-items:center}
+    .part-card .part-img img{width:100%;height:140px;object-fit:cover}
+    .part-card .part-info{padding:14px}
+    .part-card .part-info .badge{display:inline-block;background:#eef6ff;color:#1f6feb;padding:6px 10px;border-radius:999px;font-size:0.8rem;font-weight:700;margin-bottom:8px}
+    .part-card .part-info h3{font-size:0.95rem;margin-bottom:6px;color:#0f172a}
+    .part-card .part-info p{color:#374151;font-size:0.9rem;margin-bottom:10px;line-height:1.5}
+    .part-card .part-info .price{font-size:1.1rem;font-weight:700;color:#0f172a;margin-bottom:12px}
+    .part-card .part-info button{width:100%;background:#1f6feb;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;cursor:pointer}
+    .part-card .part-info button:hover{background:#1e40af}
+    .part-card .part-info button.added{background:#16a34a}
+
+    .why-us{padding:30px 0 40px}
+    .why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-top:16px}
+    .why-card{background:#ffffff;border-radius:8px;padding:20px;color:#111827;border:1px solid #e6e9ee}
+    .why-card:hover{border-color:#1f6feb;box-shadow:0 4px 12px rgba(31,111,235,0.1)}
+    .why-icon{font-size:1.8rem;margin-bottom:12px}
+    .why-card h3{margin-bottom:8px;font-size:0.95rem;color:#0f172a}
+    .why-card p{color:#374151;font-size:0.9rem;line-height:1.6}
+
+    footer{background:#ffffff;color:#374151;text-align:center;padding:18px 0;font-size:0.9rem;border-top:1px solid #e6e9ee}
+    footer span{color:#1f6feb}
+
+    @media(max-width:960px){
+      .hero-inner{grid-template-columns:1fr;gap:16px}
+      .search-bar{grid-template-columns:1fr}
+    }
+
+    @media(max-width:720px){
+      .navbar{flex-wrap:wrap;justify-content:center}
+      .navbar nav{justify-content:center;width:100%}
+      .categories,.parts,.why-grid{grid-template-columns:1fr}
+      .hero{margin:10px auto;padding:18px}
+    }
+  </style>
+</head>
+
+<body>
+  <header class="page-width">
+    <div class="navbar">
+      <div class="logo">Auto<span>Parts</span>ZW</div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="catalog.php">Catalog</a>
+        <a href="login.php">Login</a>
+      </nav>
+      <a href="cart.html" class="cart-btn">
+        <span>🛒 Cart</span>
+        <span class="cart-count" id="cartCount">0</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="page-width">
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <h1>Find <span>Any Part</span> for Any Vehicle.</h1>
+          <p>AutoPartsZW makes it easy to search fast, compare prices, and order parts with EcoCash or OneMoney — all from your phone or desktop.</p>
+          <div class="hero-actions">
+            <a href="catalog.php" class="btn-primary">Browse Catalog</a>
+            <a href="login.php" class="btn-secondary">Sign in</a>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <h3>Find parts in seconds</h3>
+          <p>Choose your vehicle make, model and search type to jump straight to the right part. Local stock, trusted brands, simple checkout.</p>
+          <div class="search-bar">
+            <select id="makeSelect">
+              <option value="">Select Make</option>
+              <option>Toyota</option>
+              <option>Honda</option>
+              <option>Mazda</option>
+              <option>Nissan</option>
+              <option>Isuzu</option>
+            </select>
+            <select id="modelSelect">
+              <option value="">Select Model</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Search e.g. brake pads" />
+            <button onclick="doSearch()">Search Parts</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Browse by <span>Category</span></h2>
+      <div class="categories">
+        <a href="catalog.php?category=Brakes" class="category-card">
+          <div class="icon">
+            <img src="images%20parts/brake disc.jpg" alt="Brakes Icon" />
+          </div>
+          <p>Brakes</p>
+        </a>
+        <a href="catalog.php?category=Engine" class="category-card">
+          <div class="icon">
+            <img src="images%20parts/engine.jpg" alt="Engine Icon" />
+          </div>
+          <p>Engine</p>
+        </a>
+        <a href="catalog.php?category=Suspension" class="category-card">
+          <div class="icon">
+            <img src="images%20parts/suspension.jpg" alt="Suspension Icon" />
+          </div>
+          <p>Suspension</p>
+        </a>
+        <a href="catalog.php?category=Electrical" class="category-card">
+          <div class="icon">
+            <img src="images%20parts/spark plugs.jpg" alt="Electrical Icon" />
+          </div>
+          <p>Electrical</p>
+        </a>
+        <a href="catalog.php?category=Filters" class="category-card">
+          <div class="icon">
+            <img src="images%20parts/air filter.jpg" alt="Filters Icon" />
+          </div>
+          <p>Filters</p>
+        </a>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Featured <span>Parts</span></h2>
+      <div class="parts">
+        <div class="part-card">
+          <div class="part-img">
+            <img src="images%20parts/brake pads.webp" alt="Front Brake Pads" />
+          </div>
+          <div class="part-info">
+            <span class="badge">In Stock</span>
+            <h3>Front Brake Pads</h3>
+            <p>Toyota Hilux 2015–2022</p>
+            <div class="price">$18.50</div>
+            <button onclick="addToCart(this, 'Front Brake Pads')">Add to Cart</button>
+          </div>
+        </div>
+
+        <div class="part-card">
+          <div class="part-img">
+            <img src="images%20parts/alternator.jpg" alt="Alternator" />
+          </div>
+          <div class="part-info">
+            <span class="badge">In Stock</span>
+            <h3>Alternator 90A</h3>
+            <p>Toyota Corolla 2010–2018</p>
+            <div class="price">$65.00</div>
+            <button onclick="addToCart(this, 'Alternator 90A')">Add to Cart</button>
+          </div>
+        </div>
+
+        <div class="part-card">
+          <div class="part-img">
+            <img src="images%20parts/shock absorbers.jpg" alt="Shock Absorbers" />
+          </div>
+          <div class="part-info">
+            <span class="badge">In Stock</span>
+            <h3>Shock Absorbers</h3>
+            <p>Mazda B2500 2005–2012</p>
+            <div class="price">$42.00</div>
+            <button onclick="addToCart(this, 'Shock Absorbers')">Add to Cart</button>
+          </div>
+        </div>
+
+        <div class="part-card">
+          <div class="part-img">
+            <img src="images%20parts/oil filter.jpg" alt="Oil Filter" />
+          </div>
+          <div class="part-info">
+            <span class="badge">In Stock</span>
+            <h3>Oil Filter</h3>
+            <p>Honda Fit 2008–2020</p>
+            <div class="price">$4.50</div>
+            <button onclick="addToCart(this, 'Oil Filter')">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="why-us">
+      <h2 class="section-title">Why Choose <span>AutoPartsZW</span></h2>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="why-icon">✅</div>
+          <h3>Genuine Parts</h3>
+          <p>Sourced from trusted suppliers so your repairs are safe and reliable.</p>
+        </div>
+
+        <div class="why-card">
+          <div class="why-icon">💰</div>
+          <h3>Competitive Prices</h3>
+          <p>Find the best value in one place without shopping around.</p>
+        </div>
+
+        <div class="why-card">
+          <div class="why-icon">📱</div>
+          <h3>Mobile Payments</h3>
+          <p>Pay securely using EcoCash or OneMoney on your phone.</p>
+        </div>
+
+        <div class="why-card">
+          <div class="why-icon">📦</div>
+          <h3>Rapid Delivery</h3>
+          <p>Easy pickup and delivery options designed for Zimbabwe.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 <span>AutoPartsZW</span> • Nyasha Ernest Nyakamhanda • B242508B • NWE214</p>
+  </footer>
+
+  <script>
+    let cartCount = Number(localStorage.getItem('autoparts_cart_count') || 0);
+    const cartCountEl = document.getElementById('cartCount');
+    cartCountEl.textContent = cartCount;
+
+    function addToCart(btn, itemName) {
+      cartCount++;
+      localStorage.setItem('autoparts_cart_count', cartCount);
+      cartCountEl.textContent = cartCount;
+      btn.textContent = '✓ Added!';
+      btn.classList.add('added');
+      setTimeout(() => {
+        btn.textContent = 'Add to Cart';
+        btn.classList.remove('added');
+      }, 1500);
+    }
+
+    const models = {
+      Toyota: ['Hilux', 'Corolla', 'Land Cruiser', 'Prado', 'RAV4'],
+      Honda: ['Fit', 'Accord', 'CR-V', 'HR-V'],
+      Mazda: ['B2500', 'CX-5', 'Demio', 'BT-50'],
+      Nissan: ['Navara', 'X-Trail', 'Hardbody', 'Patrol'],
+      Isuzu: ['D-Max', 'KB', 'MU-X']
+    };
+
+    document.getElementById('makeSelect').addEventListener('change', function () {
+      const modelSelect = document.getElementById('modelSelect');
+      modelSelect.innerHTML = '<option value="">Select Model</option>';
+      if (models[this.value]) {
+        models[this.value].forEach(function (model) {
+          const opt = document.createElement('option');
+          opt.value = model;
+          opt.textContent = model;
+          modelSelect.appendChild(opt);
+        });
+      }
+    });
+
+    function doSearch() {
+      const make = document.getElementById('makeSelect').value;
+      const model = document.getElementById('modelSelect').value;
+      const query = document.getElementById('searchInput').value.trim();
+
+      if (!make && !query) {
+        alert('Please enter a search term or select a vehicle make.');
+        return;
+      }
+
+      let params = new URLSearchParams();
+      if (make) params.append('make', make);
+      if (model) params.append('model', model);
+      if (query) params.append('q', query);
+
+      window.location.href = 'catalog.php?' + params.toString();
+    }
+
+    document.getElementById('searchInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') doSearch();
+    });
+  </script>
+</body>
+</html>
